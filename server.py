@@ -5,6 +5,18 @@ import time
 from flask import Flask, render_template, request, render_template_string, redirect
 import json
 
+from llama_cpp import Llama
+from llm_response import get_response
+
+model_src = '../models/roLl31I-Corrector-RRT_PRESS-0007-EP1-1per-F16.gguf'
+
+llm = Llama(model_src)
+
+logfile = 'requests_log.jsonl'
+
+answer = []
+
+
 # Flask constructor takes the name of
 # current module (__name__) as argument.
 app = Flask(__name__)
@@ -23,11 +35,14 @@ def index():
 def check_sentences():
     data = request.form.to_dict()
     sentences = data['sentences'].split('\n')
+    sentences = [s.strip() for s in sentences if s.strip()]
+    responses = [get_response(s, llm) for s in sentences]
+    
     answer = [
-        { 'input': "This is correct.", 'correct': True, 'corrected': "This is correct." },
-        { 'input': "He go to school.", 'correct': False, 'corrected': "He goes to school." }
+        {'input': s, 'corrected':r, 'correct': (s==r)} for s,r in zip(sentences, responses)
     ]
-    time.sleep(2)
+    
+
     return render_template_string("""
         <h2>Results</h2>
         <form hx-post="/final"
@@ -67,7 +82,7 @@ def check_sentences():
 @app.route("/final", methods=["POST"])
 def final():
     data = dict(request.form)
-    print(data)
+    print(answer, data)
     return redirect('/')
 
 # main driver function
@@ -75,4 +90,4 @@ if __name__ == '__main__':
 
     # run() method of Flask class runs the application
     # on the local development server.
-    app.run()
+    app.run(host='0.0.0.0', port=8080, threaded=False)
