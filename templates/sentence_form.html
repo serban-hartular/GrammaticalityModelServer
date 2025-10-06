@@ -1,0 +1,12 @@
+
+<div id="main">
+  <!-- Initial input form -->
+  <form hx-post="/check"
+        hx-trigger="submit"
+        hx-target="#main"
+        hx-swap="innerHTML">
+    <label for="sentences">Introduceți enunțul sau enunțurile de evaluat (modelul va evalua fiecare rând separat):</label><br>
+    <textarea name="sentences" id="sentences"></textarea><br>
+    <button type="submit">Evaluare</button><span style="font-size:smaller;">(Poate dura câteva secunde pentru fiecare rând.)</span>
+  </form>
+</div>

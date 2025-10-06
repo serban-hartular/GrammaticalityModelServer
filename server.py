@@ -5,14 +5,22 @@ import time
 from flask import Flask, render_template, request, render_template_string, redirect
 import json
 
-from llama_cpp import Llama
-from llm_response import get_response
-
-model_src = '../models/roLl31I-Corrector-RRT_PRESS-0007-EP1-1per-F16.gguf'
-
-llm = Llama(model_src)
-
 logfile = 'requests_log.jsonl'
+
+REAL = False
+
+if REAL:
+    from llama_cpp import Llama
+    from llm_response import get_response
+    model_src = '../models/roLl31I-Corrector-RRT_PRESS-0007-EP1-1per-F16.gguf'
+    llm = Llama(model_src)
+else:
+    import random
+    llm = None
+    def get_response(s : str, _):
+        if random.random() < 0.5:
+            return s
+        return s + ' bork! bork!'
 
 answer = []
 
@@ -24,12 +32,11 @@ app = Flask(__name__)
 # The route() function of the Flask class is a decorator,
 # which tells the application which URL should call
 # the associated function.
+
+
 @app.route('/')
-# ‘/’ URL is bound with hello_world() function.
 def index():
     return render_template('index.html')
-
-
 
 @app.route('/check',  methods=['POST'])
 def check_sentences():
@@ -39,55 +46,38 @@ def check_sentences():
     responses = [get_response(s, llm) for s in sentences]
     
     answer = [
-        {'input': s, 'corrected':r, 'correct': (s==r)} for s,r in zip(sentences, responses)
+        {'index':i,
+         'input': s,
+         'corrected':r if r!=s else '-',
+         'correct': (s==r)}
+        for i, (s,r) in enumerate(zip(sentences, responses))
     ]
     
 
-    return render_template_string("""
-        <h2>Results</h2>
-        <form hx-post="/final"
-              hx-target="#main"
-              hx-swap="innerHTML">
-          <table border="1" cellpadding="5">
-            <tr>
-              <th>Input</th>
-              <th>Status</th>
-              <th>Corrected</th>
-              <th>Agree?</th>
-            </tr>
-            {% for row in answer %}
-            <tr>
-              <td>{{ row.input }}</td>
-              <td>{{ 'Correct' if row.correct else 'Incorrect' }}</td>
-              <td>{{ row.corrected }}</td>
-              <td>
-                <select name="agree_{{ loop.index }}" required>
-                  <option value="" selected disabled></option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
-                </select>
-              </td>
-            </tr>
-            {% endfor %}
-          </table>
-          <br>
-          <button type="submit">Submit Feedback</button>
-          <button type="button"
-                  hx-get="/"
-                  hx-target="#main"
-                  hx-swap="innerHTML">Back</button>
-        </form>
-        """, answer=answer)
+    return render_template("result_table.html", answer=answer)
 
 @app.route("/final", methods=["POST"])
 def final():
     data = dict(request.form)
-    print(answer, data)
-    return redirect('/')
+    i = 0
+    in_out = []
+    while f'original{i}' in data:
+        in_out.append({'input':data[f'original{i}'], 'response':data[f'response{i}']})
+        i += 1
+    data_dump = {'ip':request.remote_addr, 'eval':data['submit_button'],
+                 'data':in_out}
+    # print(data_dump)
+    with open(logfile, 'a') as handle:
+        handle.write(json.dumps(data_dump) + '\n')
+    return render_template("sentence_form.html")
 
 # main driver function
 if __name__ == '__main__':
 
     # run() method of Flask class runs the application
     # on the local development server.
-    app.run(host='0.0.0.0', port=8080, threaded=False)
+    if REAL:
+        app.run(host='0.0.0.0', port=8080, threaded=False)
+    else:
+        app.run(threaded=False)
+

@@ -1,0 +1,28 @@
+        <h3>Rezultate</h3>
+        <form hx-post="/final"
+              hx-target="#main"
+              hx-swap="innerHTML">
+          <table border="1" cellpadding="5">
+            <tr>
+              <th>Enunț</th>
+              <th>Evaluare</th>
+              <th>Sugestie</th>
+            </tr>
+            {% for row in answer %}
+            <tr>
+              <td>{{ row.input }}</td>
+              <td>{{ 'Corect' if row.correct else 'Incorect' }}</td>
+              <td>{{ row.corrected }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+          {% for row in answer %}
+            <input type="hidden" name="original{{row.index}}" value="{{row.input}}" />
+            <input type="hidden" name="response{{row.index}}" value="{{row.input if row.correct else row.corrected}}" />
+          {% endfor %}
+
+          <br>
+          <button type="submit" name="submit_button" value="OK">OK</button>
+          <button type="submit" name="submit_button" value="Bizar">Comportament neașteptat</button>
+          <span style="font-size:smaller;">(Cum ar fi, modelul a greșit la unul dintre enunțuri, sau modelul a recunoscut o eroare alta decât dezacordurile de gen, număr și persoană.)</span>
+        </form>

@@ -14,6 +14,7 @@
     .correct { color: green; font-weight: bold; }
     .incorrect { color: red; font-weight: bold; }
     button { padding: 0.5rem 1rem; margin-top: 1rem; }
+    .fineprint {font-family: Courier, serif; font-size: smaller; }
 
     /* overlay covers the whole screen */
     #processing-overlay {
@@ -45,16 +46,28 @@
   <div id="processing-box">Processing request… Please wait.</div>
 </div>
 
-<div id="main">
-  <!-- Initial input form -->
-  <form hx-post="/check"
-        hx-trigger="submit"
-        hx-target="#main"
-        hx-swap="innerHTML">
-    <label for="sentences">Enter your sentences:</label><br>
-    <textarea name="sentences" id="sentences"></textarea><br>
-    <button type="submit">Submit</button>
-  </form>
+<h2>Detector de dezacorduri</h2>
+<div>
+<p style="font-size:smaller;">
+  Acesta este un LLM cu 8b parametri care a fost antrenat să detecteze dezacordurile de
+  gen, număr și persoană în limba română.
+  Este un model experimental.
+</p></div>
+
+<br/>
+
+{% include 'sentence_form.html' %}
+
+<hr/>
+<br/><br/>
+
+<div class="fineprint">
+<p>&copy; Șerban Hartular, 2025. </p>
+<p>Modelul poate fi accesat la
+  <a href="https://huggingface.co/hartular/roLl31I-Corrector-RRT_PRESS-0007-EP1-1per">https://huggingface.co/hartular/roLl31I-Corrector-RRT_PRESS-0007-EP1-1per</a>
+  și folosit sub licența Creative Commons Attribution Non Commercial 4.0. A fost obținut
+  prin fine-tuning-ul modelului
+  <a href="https://huggingface.co/OpenLLM-Ro/RoLlama3.1-8b-Instruct">OpenLLM-Ro/RoLlama3.1-8b-Instruct</a>.</p>
 </div>
 
 <script>
