@@ -7,7 +7,7 @@ import json
 
 logfile = 'requests_log.jsonl'
 
-REAL = True
+REAL = False
 
 if REAL:
     from llama_cpp import Llama
@@ -33,10 +33,11 @@ app = Flask(__name__)
 # which tells the application which URL should call
 # the associated function.
 
+special_chars=['ă','î','â', 'ț', 'ș', 'Ă','Î','Â','Ș','Ț']
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', special_chars=special_chars)
 
 @app.route('/check',  methods=['POST'])
 def check_sentences():
@@ -69,7 +70,9 @@ def final():
     # print(data_dump)
     with open(logfile, 'a') as handle:
         handle.write(json.dumps(data_dump) + '\n')
-    return render_template("sentence_form.html")
+
+    return render_template("sentence_form.html",
+                           special_chars=special_chars)
 
 # main driver function
 if __name__ == '__main__':

@@ -1,4 +1,20 @@
 
+<script>
+  function insertString(to_insert) {
+    var element = document.getElementById("sentences");
+    var sel_start = element.selectionStart;
+    element.value = element.value.slice(0, sel_start) + to_insert + element.value.slice(sel_start)
+    element.focus()
+    element.setSelectionRange(sel_start+1, sel_start+1)
+    //console.log(sel_start, element.selectionStart)
+  }
+</script>
+
+<style>
+  .letter_button {background-color: white; }
+
+</style>
+
 <div id="main">
   <!-- Initial input form -->
   <form hx-post="/check"
@@ -6,7 +22,11 @@
         hx-target="#main"
         hx-swap="innerHTML">
     <label for="sentences">Introduceți enunțul sau enunțurile de evaluat (modelul va evalua fiecare rând separat):</label><br>
-    <textarea name="sentences" id="sentences"></textarea><br>
+    <textarea name="sentences" id="sentences"></textarea><br/>
+    {% for char in special_chars %}
+    <button class="letter_button" type="button" onclick="insertString('{{char}}')">{{char}}</button>
+    {% endfor %}
+    <br/>
     <button type="submit">Evaluare</button><span style="font-size:smaller;">(Poate dura câteva secunde pentru fiecare rând.)</span>
   </form>
 </div>
