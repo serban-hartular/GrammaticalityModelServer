@@ -7,7 +7,7 @@ import json
 
 logfile = 'requests_log.jsonl'
 
-REAL = False
+REAL = True
 
 if REAL:
     from llama_cpp import Llama
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     # run() method of Flask class runs the application
     # on the local development server.
     if REAL:
-        app.run(host='0.0.0.0', port=8080, threaded=False)
+        app.run(host='0.0.0.0', port=8081, threaded=False)
     else:
         app.run(threaded=False)
 
